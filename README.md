@@ -7,3 +7,7 @@ An intelligent AI driven weather monitoring system
 ## Napkin Diagram
 
 ![Napkin Diagram](https://user-images.githubusercontent.com/13479281/150602603-030a2c13-3171-4840-ba33-5bcfcf464c89.png)
+
+## Design Diagram
+
+![Design Diagram](https://user-images.githubusercontent.com/13479281/151052280-ec45ed2c-9979-45e4-81e0-7a03f1c4dde2.png)
