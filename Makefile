@@ -23,6 +23,9 @@ build_dockers:
 		make -C build/$${branch} ;\
 	done
 
+cleanup_all: cleanup
+	rm -rf build
+
 cleanup: rm_containers rm_images
 	echo "Cleaning up"
 	docker network rm ${netname}
