@@ -1,8 +1,4 @@
-# JARVIS
-An intelligent AI driven weather monitoring system
-
-![JARVIS](https://static.wikia.nocookie.net/disney/images/b/bf/JARVIS.png/revision/latest/top-crop/width/360/height/450?cb=20160408102006&path-prefix=es)
-
+# JARVIS Assignment 1
 
 ## Napkin Diagram
 
@@ -15,3 +11,18 @@ An intelligent AI driven weather monitoring system
 ## User Flow Diagram
 
 ![User flow diagram](https://user-images.githubusercontent.com/13479281/151054064-f3e3af91-6b2e-4096-89de-f733d6baa1b2.png)
+
+## Requirements
+- Docker needs to be installed in the host system
+- The entire project runs on a single machine
+- requires ``make`` to build
+
+## Build
+Just run make
+> make
+
+Head to a web browser and go to http://localhost:8000 to access the application
+
+To cleanup
+> make cleanup
+
