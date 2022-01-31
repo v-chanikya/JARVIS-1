@@ -1,11 +1,22 @@
-# Referenced from https://nbviewer.org/gist/dopplershift/356f2e14832e9b676207
-
-
-from siphon.radarserver import RadarServer
+# Code for reading S3 data is Referenced from https://nbviewer.org/gist/dopplershift/356f2e14832e9b676207
+import json
 from datetime import datetime, timedelta
-import numpy as np
-
 from timeit import default_timer
+
+import numpy as np
+from flask import Flask, request, json
+from flask_restful import Api, Resource, reqparse
+from siphon.radarserver import RadarServer
+
+app = Flask(__name__)
+api = Api(app)
+
+
+class NexradData(Resource):
+    def post(self):
+        data = json.loads(request.data)
+        x = get_for_single_timestamp(data['station'], data['date'], data['time'])
+        return x
 
 
 def raw_to_masked_float(var, data):
@@ -15,10 +26,11 @@ def raw_to_masked_float(var, data):
         data = data & 255
 
     # Mask missing points
-    data = np.ma.array(data, mask=data==0)
+    data = np.ma.array(data, mask=data == 0)
 
     # Convert to float using the scale and offset
     return data * var.scale_factor + var.add_offset
+
 
 def polar_to_cartesian(az, rng):
     az_rad = np.deg2rad(az)[:, None]
@@ -27,15 +39,17 @@ def polar_to_cartesian(az, rng):
     return x, y
 
 
-def get_for_single_timestamp(stattion, date_time):
+def get_for_single_timestamp(station, date, time):
     start1 = default_timer()
-    station = 'KLVX'
-    dt = datetime.utcnow()
-    print(dt)
     rs = RadarServer('http://tds-nexrad.scigw.unidata.ucar.edu/thredds/radarServer/nexrad/level2/S3/')
 
     query = rs.query()
-    query.stations(station).time(dt)
+    d = date.split('-')
+    t = time.split(':')
+    date_time = datetime(int(d[0]), int(d[1]), int(d[2]), int(t[0]), int(t[1]), int(t[2]))
+    query.stations(station).time(date_time)
+
+    d = {}
 
     f = rs.validate_query(query)
 
@@ -43,29 +57,52 @@ def get_for_single_timestamp(stattion, date_time):
 
         catalog = rs.get_catalog(query)
 
-        print(catalog.datasets)
         data = catalog.datasets[0].remote_access()
-        end1 = default_timer() - start1
 
-        print(end1)
         sweep = 0
+
         ref_var = data.variables['Reflectivity_HI']
         ref_data = ref_var[sweep]
         rng = data.variables['distanceR_HI'][:]
         az = data.variables['azimuthR_HI'][sweep]
 
         ref = raw_to_masked_float(ref_var, ref_data)
+        d['ref_val'] = ref.tolist()
         x, y = polar_to_cartesian(az, rng)
+        d['ref_x'] = x.tolist()
+        d['ref_y'] = y.tolist()
 
-        return (ref,x,y)
+        rad_vel_var = data.variables['RadialVelocity_HI']
+        rad_vel_data = rad_vel_var[sweep]
+        rng = data.variables['distanceV_HI'][:]
+        az = data.variables['azimuthV_HI'][sweep]
+
+        rad_vel = raw_to_masked_float(rad_vel_var, rad_vel_data)
+        #d['rad_vel_val'] = rad_vel.tolist()
+        x, y = polar_to_cartesian(az, rng)
+        #d['rad_vel_x'] = x.tolist()
+        #d['rad_vel_y'] = y.tolist()
+
+        spec_wid_var = data.variables['SpectrumWidth_HI']
+        spec_wid_data = spec_wid_var[sweep]
+        rng = data.variables['distanceD_HI'][:]
+        az = data.variables['azimuthD_HI'][sweep]
+
+        spec_wid = raw_to_masked_float(spec_wid_var, spec_wid_data)
+        #d['spec_wid_val'] = spec_wid.tolist()
+        x, y = polar_to_cartesian(az, rng)
+        #d['spec_wid_x'] = x.tolist()
+        #d['spec_wid_y'] = y.tolist()
+
+
+        return json.dumps(d)
 
 
     else:
-        print("No data found for given time stamp")
-    print("")
+        return "No data found for given time stamp"
 
-def get_for_single_timestamp_range(stattion, date_time):
 
+def get_for_single_timestamp_range(station, date_time):
     rs = RadarServer('http://tds-nexrad.scigw.unidata.ucar.edu/thredds/radarServer/nexrad/level2/S3/')
     query = rs.query()
     dt = datetime(2012, 10, 29, 15)
@@ -90,12 +127,11 @@ def get_for_single_timestamp_range(stattion, date_time):
         ref = raw_to_masked_float(ref_var, ref_var[sweep])
         x, y = polar_to_cartesian(az, rng)
 
-        l.append((ref,x,y))
+        l.append((ref, x, y))
     return l
 
 
-"""
-start = default_timer()
-x = get_for_single_timestamp("klvx", 'date_time')
-end = default_timer() - start
-"""
+api.add_resource(NexradData, '/api/nexraddata')
+
+if __name__ == '__main__':
+    app.run(port='5002')
