@@ -154,4 +154,48 @@ $(function() {
 
    // });
 
+
+    // My custom functions that doesn't concern UI
+    //
+   let domain = "https://12877c5d-aa48-4583-b999-321b06efc7ca.mock.pstmn.io"
+   let api_prefix = "/api"
+
+    $("#login-btn").click(function() {
+        let uname = $("#name").val();
+        let pass = $("#pass").val();
+        setCookie("user", uname);
+
+        $.post(domain + api_prefix + "/login",
+            {"user" : uname,
+            "pass": pass},
+            function (data){
+                console.log("Got session id " + data.session_id);
+                setCookie("session_id", data.session_id);
+                window.location.href = "/";
+            },
+            "json").fail(function(){
+                delCookie("user");
+            });
+
+    })
+
+   $("#signup-btn").click(function() {
+        let uname = $("#regname").val();
+        let pass = $("#regpass").val();
+        setCookie("user", uname);
+
+        $.post(domain + api_prefix + "/signup",
+            {"user" : uname,
+             "pass": pass},
+            function (data){
+                console.log("Got session id " + data.session_id);
+                setCookie("session_id", data.session_id);
+                window.location.href = "/";
+            },
+            "json").fail(function(){
+                delCookie("user");
+            });
+    })
+
+
 });

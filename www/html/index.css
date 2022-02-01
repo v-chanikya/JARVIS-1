@@ -65,3 +65,10 @@ body {
   color: #fff;
   border-bottom-color: #fff;
 }
+
+
+
+/* Custom styles */
+.nav_bar_user_logged_in{
+    display: none;
+}
