@@ -1,0 +1,16 @@
+version: 2.1
+
+jobs:
+  checkout-all-branches:
+    docker:
+      - image: cimg/base:2022.01
+    steps:
+      - checkout
+      - run: sudo apt-get update && sudo apt-get install -y build-essential
+      - run: make checkout_code
+
+
+workflows:
+  checkout-branches-and-build:
+    jobs:
+      - checkout-all-branches
