@@ -157,8 +157,7 @@ $(function() {
 
     // My custom functions that doesn't concern UI
     //
-   let domain = "https://12877c5d-aa48-4583-b999-321b06efc7ca.mock.pstmn.io"
-   let api_prefix = "/api"
+    let api_prefix = "/api"
 
     $("#login-btn").click(function() {
         let uname = $("#name").val();

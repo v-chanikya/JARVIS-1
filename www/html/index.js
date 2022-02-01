@@ -5,7 +5,14 @@ $(function() {
         $(".nav_bar_user_logged_in").css({"display":"block"});
         $("#user_name_nav_bar").text(getCookie("user"));
     };
+
+    let api_prefix = "/api"
+
     $("#logout_nav_bar").click(function(){
-        sessionCleanup();        
+        let session_id = getCookie("session_id");
+        $.post(domain + api_prefix + "/logout",
+            {"session_id" : session_id}).done(function (data){
+                sessionCleanup();
+            });
     })
 });
